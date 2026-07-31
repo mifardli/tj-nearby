@@ -1,0 +1,165 @@
+app:
+  name: "TJ Nearby"
+  timezone: "Asia/Jakarta"
+
+desktop:
+  # The monitor window closes to the Windows system tray by default.
+  close_to_tray: true
+  start_hidden: false
+  # Deprecated compatibility key. v0.4.4 always shows the full engine snapshot.
+  max_arrival_rows: 0
+  # Hard watchdog so the board cannot stay on “Memperbarui…” forever.
+  check_timeout_seconds: 55
+
+location:
+  # auto = Windows Location Service or macOS Core Location. manual = coordinates below.
+  mode: "auto"
+  timeout_seconds: 20
+  max_accuracy_m: 250
+  # Keep false in normal use so an automatic-location failure is visible.
+  allow_manual_fallback: false
+  # Used only in manual mode, or as an optional fallback during testing.
+  manual_latitude: null
+  manual_longitude: null
+
+nearby:
+  # smart = monitor every routed stop inside the service-specific GPS radii.
+  # nearest = legacy behaviour (global radius + nearest fixed number of groups).
+  selection_mode: "smart"
+  # Deprecated compatibility key. v0.4.4 no longer caps Smart Nearby.
+  smart_max_groups: 8
+  cluster_radius_m: 35
+  # Deprecated compatibility key. Favorites never hide other nearby routes.
+  favorite_route_bonus_m: 150
+
+  services:
+    brt:
+      enabled: true
+      search_radius_m: 1000
+      notification_radius_m: 800
+      # Deprecated compatibility key; no quota is applied.
+      reserved_slots: 1
+    non_brt:
+      enabled: true
+      search_radius_m: 800
+      notification_radius_m: 600
+      # Deprecated compatibility key; no quota is applied.
+      reserved_slots: 1
+    jaklingko:
+      enabled: true
+      search_radius_m: 500
+      notification_radius_m: 400
+      # Deprecated compatibility key; no quota is applied.
+      reserved_slots: 1
+
+  # Classification is stop-based through the routes serving each GTFS stop.
+  # A platform serving corridor 6 plus 6H is classified as BRT access.
+  classification:
+    brt_routes: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14"]
+    jaklingko_prefixes: ["JAK"]
+    jaklingko_routes: []
+
+  # Legacy settings are read only when selection_mode is "nearest".
+  search_radius_m: 700
+  max_stops: 5
+
+# Official static feed published by TransJakarta.
+gtfs:
+  url: "https://gtfs.transjakarta.co.id/files/file_gtfs.zip"
+  fallback_urls:
+    - "https://files.mobilitydatabase.org/mdb-1909/mdb-1909-202607280154/mdb-1909-202607280154.zip"
+  cache_path: "~/.tj-nearby/gtfs.zip"
+  refresh_hours: 24
+
+# The real-time interface is reverse-engineered from the TJ application and can change.
+realtime:
+  enabled: true
+  api_base: "https://tijeapi.transjakarta.co.id"
+  app_versions:
+    - "3.0.0"
+    - "2.10.2"
+  search_radius_km: 3
+  poll_seconds: 30
+  stale_after_seconds: 300
+  request_timeout_seconds: 20
+  effective_speed_kmh: 18
+  dwell_minutes_per_stop: 0.35
+
+direction:
+  # Competing GTFS headsigns closer than this score are treated as ambiguous.
+  # Ambiguous directions are never sent as notifications.
+  ambiguity_score_margin: 20
+  # Persist a journey identity per physical bus body + route. When trip,
+  # direction, or destination changes, a new journey epoch is created so a
+  # return trip cannot be suppressed by the previous outbound/inbound trip.
+  track_turnarounds: true
+  journey_state_max_age_hours: 12
+
+routes:
+  # Favorites affect ranking and banner order, not the GPS search boundary.
+  # These are route codes such as 4D or JAK 81, never physical bus-body IDs.
+  favorites: []
+  # Old releases used preferred as a strict allowlist. v0.4.2 treats old values
+  # as favorites so they cannot hide every other nearby route.
+  preferred: []
+  # Advanced-only escape hatch. Keep false for the GPS-first desktop monitor.
+  strict_filter_enabled: false
+
+notification:
+  enabled: true
+  # v0.3.2 default: every relevant bus remains tracked, but banners only
+  # appear in the useful ready window.
+  # Other supported modes: all_arrivals and leave_now.
+  mode: "ready_window"
+  walking_speed_m_per_minute: 70
+
+  # v0.3.2 separates tracking from a configurable three-stage notification policy.
+  # stops_away includes the target stop, so the stages mean:
+  #   two_stops_before = two intermediate stops remain (stops_away=3)
+  #   one_stop_before  = one intermediate stop remains  (stops_away=2)
+  #   target_is_next   = the target is the next stop     (stops_away=1)
+  # Presets: minimal, balanced, complete. Balanced is the default and sends
+  # preparation + final alerts, while skipping the middle stage to reduce noise.
+  ready_notification_intensity: "balanced"
+  # Optional custom override, for example:
+  # ready_enabled_stages: ["two_stops_before", "one_stop_before", "target_is_next"]
+  ready_notify_lead_bus_only: true
+  ready_min_seconds_between_stages: 90
+  ready_always_send_final_stage: true
+  ready_min_margin_minutes: 2
+  # Legacy global cap used only when nearby.selection_mode is "nearest".
+  # Smart mode uses notification_radius_m per service above.
+  ready_max_stop_distance_m: 500
+  ready_max_bus_data_age_seconds: 90
+
+  # ETA-only fallback when the API/GTFS cannot calculate a stop count.
+  ready_fallback_to_eta_when_stops_unknown: true
+  ready_fallback_min_margin_minutes: 2
+  ready_fallback_max_margin_minutes: 8
+  ready_fallback_max_eta_minutes: 15
+
+  # Legacy all-arrivals mode settings.
+  all_arrivals_max_eta_minutes: 120
+  timing_too_late_margin_minutes: 1
+  timing_leave_now_margin_minutes: 5
+
+  # Legacy leave-now mode settings.
+  leave_buffer_minutes: 3
+  min_eta_minutes: 2
+  max_eta_minutes: 15
+
+  # Prevent the same bus/journey/trip/direction/target from repeating every poll.
+  # A detected turnaround starts a new journey epoch and may notify again.
+  cooldown_minutes: 180
+  # 0 means no per-cycle cap: simultaneous useful buses can all notify.
+  max_notifications_per_cycle: 0
+  minimum_direction_confidence: "high"
+
+schedule:
+  # Empty means always active while the app is running.
+  # Example: ["06:00-10:00", "16:00-21:00"]
+  active_windows: []
+
+privacy:
+  store_location_history: false
+  log_coordinate_decimals: 3

@@ -1,0 +1,31 @@
+TJ Nearby v0.4.4 test report
+Generated: 31 July 2026 (WIB)
+
+Scope
+- All-nearby-stop selection without the legacy eight-group cap.
+- Service-specific search radii remain enforced.
+- Distinct public stop names/platforms remain separate.
+- One physical vehicle matching multiple upcoming nearby stops is shown once at the closest still-upcoming boarding stop.
+- Windows GUI has no legacy 60-row display cap.
+- Route coverage fields and activity-log audit are available.
+
+Automated test command
+PYTHONPATH=src pytest -q
+
+Result
+100 tests passed.
+One existing httpx deprecation warning was emitted; no test failed.
+
+Critical regression coverage
+- Smart mode with smart_max_groups=8 returned 11 eligible routed stop groups.
+- B25 and 11M remained in the selected set even when placed after eight closer groups.
+- Flyover Jatinegara Atas, Flyover Jatinegara Bawah, and Flyover Jatinegara remained separate stop groups in the synthetic GTFS test.
+- A single JAK.41 vehicle projected to two upcoming nearby stops was reduced to one row at the closest stop to the user.
+- 75 distinct vehicles were retained by the GUI display helper with no default limit.
+
+Wheel smoke test
+- Built tj_nearby-0.4.4-py3-none-any.whl.
+- Installed into an isolated target with --no-deps.
+- Imported tj_nearby successfully.
+- Reported version: 0.4.4.
+- Windows GUI demo snapshot loaded successfully.

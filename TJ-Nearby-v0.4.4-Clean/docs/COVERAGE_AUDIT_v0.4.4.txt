@@ -1,0 +1,35 @@
+TJ Nearby v0.4.4 — route coverage audit
+
+What was audited
+1. Stop selection no longer ends after eight groups.
+2. Every routed GTFS stop group inside the configured service radius is passed to realtime matching.
+3. Service radii remain: BRT 1000 m, non-BRT 800 m, JakLingko 500 m by default.
+4. Stop IDs, public names, directions, and platforms remain available to ETA matching.
+5. Different names such as Flyover Jatinegara Atas and Flyover Jatinegara Bawah are not merged.
+6. No route-specific or stop-specific hardcode was added for B25, 11M, or Jatinegara.
+7. All distinct vehicles returned by the engine are rendered; the old 60-row config cap is ignored.
+8. One vehicle matching several sequential nearby stops is displayed once at the closest still-upcoming boarding stop.
+
+Synthetic whole-pipeline regression
+- Input routed groups: 11
+- Legacy smart_max_groups value: 8
+- Output monitored groups: 11
+- Routes retained after the former eighth slot: B25, 11M, and corridor 10
+
+Runtime audit added to activity log
+cycle.coverage now records:
+- monitored_groups
+- monitored_stop_ids
+- scheduled_routes
+- realtime_routes_at_monitored_stops
+- matched_routes
+- unresolved_realtime_routes
+
+The exported diagnostic also includes the same route-coverage sets. This allows a real Windows run against the user's current GTFS cache and live TJ endpoint to distinguish:
+- route absent from the monitored stop set;
+- route present in GTFS but no realtime vehicle currently seen;
+- realtime route present but no arrival resolved;
+- route successfully matched and shown.
+
+Validation boundary
+The current live TransJakarta feed could not be downloaded in the build container, so the network-wide live result was not fabricated. The build performs the complete audit at runtime using the user's actual GTFS cache, GPS fix, and realtime snapshot.
