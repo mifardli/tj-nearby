@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/tj_nearby.png" alt="TJ Nearby logo" width="104">
+  <img src="TJ-Nearby-v0.4.4-Clean/assets/tj_nearby.icog" alt="TJ Nearby logo" width="104">
 </p>
 
 <h1 align="center">TJ Nearby</h1>
