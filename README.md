@@ -22,7 +22,7 @@ TJ Nearby dirancang sebagai pengingat pasif saat pengguna sedang bekerja, belaja
 ## Preview
 
 <p align="center">
-  <img src="docs/screenshots/tj-nearby-v0.4.4-windows-preview.png" alt="Preview TJ Nearby v0.4.4 pada Windows" width="100%">
+  <img src="TJ-Nearby-v0.4.4-Clean/assets/TJ-Nearby-v0.4.4-GitHub-Preview.png" alt="Preview TJ Nearby v0.4.4 pada Windows" width="100%">
 </p>
 
 <p align="center"><em>Preview TJ Nearby v0.4.4 pada Windows menggunakan data demo.</em></p>
